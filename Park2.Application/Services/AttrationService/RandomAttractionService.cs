@@ -13,35 +13,26 @@ namespace Park2.Application.Services.AttrationService
     {
         public Attraction? SelectAttraction(Visitor visitor, IEnumerable<Attraction> attractions)
         {
-            // Все доступные аттракционы по возрасту и статусу
             var available = attractions
                 .Where(a => a.Status == AttractionStatus.Open &&
-                            (a.MinAge == 0 || visitor.Age >= a.MinAge))
+                            (a.MinAge == 0 || visitor.Age >= a.MinAge) &&
+                            a.CurrentQueueLength < a.MaxQueueLength &&
+                            a.OccupiedSlotsCount < a.Capacity)
                 .ToList();
 
             if (!available.Any())
                 return null;
 
-            // Попытка использовать предпочитаемый аттракцион
             if (visitor.PreferredAttractionId != null)
             {
                 var preferred = available.FirstOrDefault(a =>
-                    a.Id == visitor.PreferredAttractionId &&
-                    a.OccupiedSlotsCount < a.Capacity);
+                    a.Id == visitor.PreferredAttractionId);
 
                 if (preferred != null)
                     return preferred;
             }
 
-            // Если preferred недоступен — выбрать случайный доступный
-            var candidates = available
-                .Where(a => a.OccupiedSlotsCount < a.Capacity)
-                .ToList();
-
-            if (!candidates.Any())
-                return null;
-
-            return candidates[Random.Shared.Next(candidates.Count)];
+            return available[Random.Shared.Next(available.Count)];
         }
     }
 }

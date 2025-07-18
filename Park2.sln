@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35913.81 d17.13
+VisualStudioVersion = 17.13.35913.81
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Park2", "Park2\Park2.csproj", "{0D42199C-223C-4F16-A264-909BA058101E}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Park2.Presentation", "Park2.Presentation\Park2.Presentation.csproj", "{6954F303-373C-4386-9007-C8AC34B19B76}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Park2.Infrastructure", "Park2.Infrastructure\Park2.Infrastructure.csproj", "{C10439DA-9A69-4DA4-BC5C-A25FB897EF05}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Park2.Tests", "Park2.Tests\Park2.Tests.csproj", "{90E4E199-5411-46C3-AB94-A84450B441CE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{C10439DA-9A69-4DA4-BC5C-A25FB897EF05}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C10439DA-9A69-4DA4-BC5C-A25FB897EF05}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C10439DA-9A69-4DA4-BC5C-A25FB897EF05}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90E4E199-5411-46C3-AB94-A84450B441CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90E4E199-5411-46C3-AB94-A84450B441CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90E4E199-5411-46C3-AB94-A84450B441CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90E4E199-5411-46C3-AB94-A84450B441CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

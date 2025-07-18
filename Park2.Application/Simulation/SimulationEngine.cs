@@ -54,26 +54,8 @@ namespace Park2.Application.Simulation
                 _ = Task.Run(() => _processor.ProcessQueueAsync(attraction, token));
             }
 
-            //_logger.LogInformation("Simulation started with {Count} attractions", _park.Attractions.Count);
             return Task.CompletedTask;
         }
-
-        //public void ManageVisitorAutoGeneration(bool isGenerationShouldStop) 
-        //{
-        //    try
-        //    {
-        //        if (isGenerationShouldStop)
-        //        {
-        //            StopVisitorGeneration();
-        //        }
-
-        //        StartVisitorGeneration();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine(ex.ToString());
-        //    }
-        //}
 
         public void StopVisitorGeneration()
         {
@@ -81,6 +63,7 @@ namespace Park2.Application.Simulation
             _visitorGenerationEnabled = false;
             _logger.LogInformation("Visitor generation has been stopped.");
         }
+
         public void StartVisitorGeneration()
         {
             _visitorGenerationEnabled = true;
@@ -94,7 +77,6 @@ namespace Park2.Application.Simulation
                 if (!_visitorGenerationEnabled)
                     return;
 
-                // Проверка лимита
                 if (_park.ActiveVisitors.Count >= _settings.MaxVisitors)
                     return;
 
@@ -108,11 +90,9 @@ namespace Park2.Application.Simulation
                         _park.ActiveVisitors.Add(visitor);
                     }
 
-                    //_logger.LogInformation("New visitor {Id} entered park at {Time}", visitor.Id, currentTime);
 
                     _visitorService.RouteVisitor(visitor, _park.Attractions);
 
-                    //_logger.LogInformation("New visitor {Id} routed to {attraction}", visitor.Id, _visitorService.RouteVisitor(visitor, _park.Attractions));
                 }
             }
             catch (Exception ex)
@@ -134,9 +114,6 @@ namespace Park2.Application.Simulation
             }
 
             var routingResult = _visitorService.RouteVisitor(visitor, new[] { chosenAttraction });
-
-            //_logger.LogInformation("Manual visitor {Name} added and routed to {Attraction}. Routing result: {Result}",
-            //    visitor.Name, chosenAttraction.Name, routingResult);
         }
 
         private void HandleAttractionClosure(Attraction attraction)

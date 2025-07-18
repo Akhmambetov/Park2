@@ -8,7 +8,14 @@ using System.Threading.Tasks;
 
 namespace Park2.Application.Simulation
 {
-    public class ReportController
+    public interface IReportController
+    {
+        decimal GetTotalRevenue();
+        int GetTotalVisitorsForAttraction(Guid attractionId);
+        decimal GetAverageWaitTimeForAttraction(Guid attractionId);
+        int GetPeakQueueLengthForAttraction(Guid attractionId);
+    }
+    public class ReportController : IReportController
     {
         private readonly Park _park;
         private readonly IReportService _reportService;
