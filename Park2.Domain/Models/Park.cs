@@ -11,6 +11,6 @@ namespace Park2.Domain.Models
         public List<Attraction> Attractions { get; set; } = new();
         public List<Visitor> ActiveVisitors { get; private set; } = new();
         public List<Visitor> DepartedVisitors { get; private set; } = new();
-        public decimal TotalRevenue { get; private set; }
+        public decimal TotalRevenue { get; set; } = 0; // Возможно здесь стоит внести изменения
     }
 }

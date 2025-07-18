@@ -21,23 +21,23 @@ namespace Park2.Presentation.ConsoleUI
         private DateTime _simulatedTime;
         private readonly CancellationTokenSource _cts;
         private readonly SimulationEngine _engine;
-        private readonly IVisitorService _visitorService;
+        private readonly ReportController _reportController;
 
         public ConsoleApp(
             IClockSimulationService clock,
             IOptions<SimulationSettings> settings,
             Park park,
             SimulationEngine engine,
-             IVisitorService visitorService)
+            IVisitorService visitorService,
+            ReportController reportController)
         {
             _clock = clock;
             _settings = settings.Value;
             _park = park;
             _engine = engine;
             _simulatedTime = DateTime.Today.AddHours(_settings.StartHour);
-            _visitorService = visitorService;
             _cts = new CancellationTokenSource();
-
+            _reportController = reportController;
         }
 
         public async Task Run()
@@ -104,6 +104,9 @@ namespace Park2.Presentation.ConsoleUI
                     case '5':
                         ChangeAttractionStatus();
                         break;
+                    case '6':
+                        ShowReportMenuAsync();
+                        break;
                     case 'N':
                         CreateVisitorFromConsoleInput();
                         break;
@@ -116,6 +119,45 @@ namespace Park2.Presentation.ConsoleUI
                 }
 
                 Console.WriteLine("\nНажмите любую клавишу для возврата в меню...");
+                Console.ReadKey(true);
+            }
+        }
+
+        private void ShowReportMenuAsync()
+        {
+            while (true)
+            {
+                MenuPrinter.ShowReportMenu(); // <-- Используем уже написанную функцию отображения
+
+                var input = Console.ReadLine();
+
+                switch (input)
+                {
+                    case "1":
+                        Console.WriteLine($"На данный момент - ({_simulatedTime:HH:mm}), общая выручка с аттракционов составляет - {_reportController.GetTotalRevenue()} тенге)");
+                        break;
+
+                    case "2":
+                        GetVisitorsForAttraction();
+                        break;
+
+                    case "3":
+                        GetAverageWaitTimeForAttraction();
+                        break;
+
+                    case "4":
+                        GetPeakQueueLengthForAttraction();
+                        break;
+
+                    case "5":
+                        return;
+
+                    default:
+                        Console.WriteLine("❌ Неверный пункт. Попробуйте снова.");
+                        break;
+                }
+
+                Console.WriteLine("\nНажмите любую клавишу для возврата к меню отчётов...");
                 Console.ReadKey(true);
             }
         }
@@ -160,7 +202,7 @@ namespace Park2.Presentation.ConsoleUI
             }
             else
             {
-                foreach (var visitor in _park.ActiveVisitors)
+                foreach (var visitor in _park.ActiveVisitors) 
                 {
                     Console.WriteLine($"   👤 {visitor.Name,-15} | Возраст: {visitor.Age,2} | VIP: {visitor.IsVIP} | Прибыл: {visitor.ArrivalTime:HH:mm}");
                 }
@@ -229,23 +271,7 @@ namespace Park2.Presentation.ConsoleUI
 
         private void ChangeAttractionStatus()
         {
-            Console.Clear();
-            Console.WriteLine("🔧 Изменение статуса аттракциона:\n");
-
-            for (int i = 0; i < _park.Attractions.Count; i++)
-            {
-                var attraction = _park.Attractions[i];
-                Console.WriteLine($"{i + 1}. {attraction.Name} (Статус: {attraction.Status})");
-            }
-
-            Console.Write("\nВведите номер аттракциона: ");
-            if (!int.TryParse(Console.ReadLine(), out int index) || index < 1 || index > _park.Attractions.Count)
-            {
-                Console.WriteLine("❌ Неверный ввод.");
-                return;
-            }
-
-            var selected = _park.Attractions[index - 1];
+            var selected = MenuPrinter.ChooseAttractionMenu(_park);
 
             Console.WriteLine("\nДоступные статусы:");
             foreach (var status in Enum.GetValues(typeof(AttractionStatus)))
@@ -278,6 +304,33 @@ namespace Park2.Presentation.ConsoleUI
                 Console.WriteLine($"✅ Статус аттракциона '{selected.Name}' изменён на {newStatus}.");
             else
                 Console.WriteLine("⚠️ Статус уже установлен или не удалось изменить.");
+        }
+
+        private void GetVisitorsForAttraction()
+        {
+            var selected = MenuPrinter.ChooseAttractionMenu(_park);
+
+            var totalVisitors = _reportController.GetTotalVisitorsForAttraction(selected.Id);
+
+            Console.WriteLine($"На данный момент - ({_simulatedTime:HH:mm}), общее количество посетителей посетивший данный атрацион - {totalVisitors}");
+        }
+
+        private void GetAverageWaitTimeForAttraction()
+        {
+            var selected = MenuPrinter.ChooseAttractionMenu(_park);
+
+            var averageWaitTime = _reportController.GetAverageWaitTimeForAttraction(selected.Id);
+
+            Console.WriteLine($"На данный момент - ({_simulatedTime:HH:mm}), среднее время ожидания в очереди составляет - {averageWaitTime} минут");
+        }
+
+        private void GetPeakQueueLengthForAttraction()
+        {
+            var selected = MenuPrinter.ChooseAttractionMenu(_park);
+
+            var peakLength = _reportController.GetPeakQueueLengthForAttraction(selected.Id);
+
+            Console.WriteLine($"На данный момент - ({_simulatedTime:HH:mm}), пиковое количество посетителей на данный аттракцион составляет - {peakLength} человек");
         }
 
         private void OnTimeTick(DateTime currentTime)

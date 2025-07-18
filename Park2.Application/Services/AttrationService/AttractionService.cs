@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using Park2.Application.Interfaces;
 using Park2.Application.Interfaces.AttractionInterface;
 using Park2.Domain.Enums;
 using Park2.Domain.Models;
@@ -13,11 +14,11 @@ namespace Park2.Application.Services.AttrationService
 {
     public class AttractionService : IAttractionService
     {
-        private readonly SimulationSettings _settings;
+        private readonly IClockSimulationService _clock;
 
-        public AttractionService(IOptions<SimulationSettings> options)
+        public AttractionService(IClockSimulationService clock)
         {
-            _settings = options.Value;
+            _clock = clock;
         }
 
         public bool TryEnqueueVisitor(Attraction attraction, Visitor visitor)
@@ -32,9 +33,15 @@ namespace Park2.Application.Services.AttrationService
                 return false;
 
             if (visitor.IsVIP)
+            {
+                visitor.QueueEnqueuedAt = _clock.CurrentTime;
                 attraction.VipQueue.Enqueue(visitor);
+            }
             else
+            {
+                visitor.QueueEnqueuedAt = _clock.CurrentTime;
                 attraction.RegularQueue.Enqueue(visitor);
+            }
 
             int currentLength = attraction.CurrentQueueLength;
             if (currentLength > attraction.MaxQueueLength)

@@ -98,7 +98,6 @@ namespace Park2.Application.Services.VisitorService
 
         public void UpdatePreferredAttraction(Visitor visitor, IEnumerable<Attraction> attractions)
         {
-            // Фильтруем доступные аттракционы, исключая текущий предпочтительный
             var eligibleAttractions = attractions
                 .Where(a =>
                     a.Status == AttractionStatus.Open &&
@@ -108,7 +107,6 @@ namespace Park2.Application.Services.VisitorService
             if (!eligibleAttractions.Any())
                 return;
 
-            // Выбираем новый предпочтительный аттракцион случайным образом
             var newPreferred = _randomAttractionService.SelectAttraction(visitor, eligibleAttractions);
 
             if (newPreferred != null)

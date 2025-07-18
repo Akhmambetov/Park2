@@ -14,5 +14,6 @@ namespace Park2.Domain.Models
         public Guid? PreferredAttractionId { get; set; }
         required public int Age { get; set; }
         required public bool IsVIP { get; set; }
+        public DateTime? QueueEnqueuedAt { get; set; }
     }
 }

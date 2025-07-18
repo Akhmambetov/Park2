@@ -22,6 +22,7 @@ namespace Park2.Domain.Models
         public int OccupiedSlotsCount => OccupiedSlots?.Count ?? 0;
         public required AttractionStatus Status { get; set; }
         public int MaxQueueLength { get; set; }
+        public int PeakQueueLength { get; set; }
         public int TotalVisitors { get; set; }
         public List<TimeSpan> WaitTimes { get; set; } = new();
         public required int Capacity { get; set; }

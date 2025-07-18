@@ -58,8 +58,26 @@ namespace Park2.Application.Simulation
             return Task.CompletedTask;
         }
 
+        //public void ManageVisitorAutoGeneration(bool isGenerationShouldStop) 
+        //{
+        //    try
+        //    {
+        //        if (isGenerationShouldStop)
+        //        {
+        //            StopVisitorGeneration();
+        //        }
+
+        //        StartVisitorGeneration();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine(ex.ToString());
+        //    }
+        //}
+
         public void StopVisitorGeneration()
         {
+
             _visitorGenerationEnabled = false;
             _logger.LogInformation("Visitor generation has been stopped.");
         }
@@ -117,8 +135,8 @@ namespace Park2.Application.Simulation
 
             var routingResult = _visitorService.RouteVisitor(visitor, new[] { chosenAttraction });
 
-            _logger.LogInformation("Manual visitor {Name} added and routed to {Attraction}. Routing result: {Result}",
-                visitor.Name, chosenAttraction.Name, routingResult);
+            //_logger.LogInformation("Manual visitor {Name} added and routed to {Attraction}. Routing result: {Result}",
+            //    visitor.Name, chosenAttraction.Name, routingResult);
         }
 
         private void HandleAttractionClosure(Attraction attraction)
@@ -148,7 +166,7 @@ namespace Park2.Application.Simulation
                 {
                     _logger.LogInformation("⏳ Attraction '{Name}' will reopen in {Minutes} minutes", attraction.Name, restartMinutes);
 
-                    await Task.Delay(TimeSpan.FromMilliseconds(restartMinutes));
+                    await Task.Delay(TimeSpan.FromSeconds(restartMinutes)); 
 
                     _attractionService.SetAttractionStatus(attraction, AttractionStatus.Open);
 

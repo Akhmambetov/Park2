@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Park2.Application.Interfaces;
+using Park2.Application.Interfaces.ReportInterfaces;
 using Park2.Application.Interfaces.VisitorInterface;
 using Park2.Domain.Enums;
 using Park2.Domain.Models;
@@ -16,24 +17,25 @@ namespace Park2.Application.Services.AttrationService
         private readonly Park _park;
         private readonly IClockSimulationService _clock;
         private readonly IVisitorService _visitorService;
+        private readonly IReportService _reportService;
         private readonly ILogger<AttractionProcessorService> _logger;
 
         public AttractionProcessorService(
             Park park,
             IClockSimulationService clock,
             IVisitorService visitorService,
-            ILogger<AttractionProcessorService> logger)
+            ILogger<AttractionProcessorService> logger,
+            IReportService reportService)
         {
             _park = park;
             _clock = clock;
             _visitorService = visitorService;
             _logger = logger;
+            _reportService = reportService;
         }
 
         public async Task ProcessQueueAsync(Attraction attraction, CancellationToken token)
         {
-            //_logger.LogInformation("Start processing queue for attraction: {Name}", attraction.Name);
-
             DateTime? firstEnqueueTime = null;
 
             while (!token.IsCancellationRequested)
@@ -51,6 +53,13 @@ namespace Park2.Application.Services.AttrationService
                     int vipCount = attraction.VipQueue.Count;
                     int regularCount = attraction.RegularQueue.Count;
                     int totalQueue = vipCount + regularCount;
+
+                    if (totalQueue > attraction.PeakQueueLength)
+                    {
+                        typeof(Attraction)
+                            .GetProperty("PeakQueueLength")!
+                            .SetValue(attraction, totalQueue);
+                    }
 
                     if (totalQueue == 0)
                     {
@@ -72,31 +81,33 @@ namespace Park2.Application.Services.AttrationService
 
                         while (visitors.Count < attraction.Capacity && attraction.VipQueue.TryDequeue(out var vip))
                         {
+                            if (vip.QueueEnqueuedAt.HasValue)
+                            {
+                                var wait = _clock.CurrentTime - vip.QueueEnqueuedAt.Value;
+                                attraction.WaitTimes.Add(wait);
+                            }
+
                             visitors.Add(vip);
                             vipNames.Add(vip.Name);
                         }
 
                         while (visitors.Count < attraction.Capacity && attraction.RegularQueue.TryDequeue(out var regular))
                         {
+                            if (regular.QueueEnqueuedAt.HasValue)
+                            {
+                                var wait = _clock.CurrentTime - regular.QueueEnqueuedAt.Value;
+                                attraction.WaitTimes.Add(wait);
+                            }
+
                             visitors.Add(regular);
                             regularNames.Add(regular.Name);
                         }
                         attraction.OccupiedSlots.AddRange(visitors);
                         attraction.TotalVisitors += visitors.Count;
 
-                        // Надо разобраться с Wait Time
-
-                        _logger.LogInformation(
-                            "Ride starting on {Attraction}. VIPs: [{VIPs}], Regulars: [{Regulars}]",
-                            attraction.Name,
-                            string.Join(", ", vipNames),
-                            string.Join(", ", regularNames));
-
-                        //_logger.LogInformation("🎢 Start Attraction {Name}. Amount of Visitors: {Count}. Duration: {Duration}. Queue: {Queue}",
-                        //    attraction.Name,
-                        //    visitors.Count,
-                        //    attraction.Duration,
-                        //    attraction.CurrentQueueLength);
+                        decimal revenue = _reportService.GetMoneyFromAttractionLaunch(attraction.Id, visitors.Count);
+                        _reportService.IncreaseTotalRevenue(revenue);
+                        _reportService.IncreaseTotalVisitorsForAttraction(attraction.Id, visitors.Count);
 
                         await HandleGroupRideAsync(attraction, visitors, token);
 
@@ -157,17 +168,6 @@ namespace Park2.Application.Services.AttrationService
                     reroutedVisitors.Add(visitor.Name);
                 }
             }
-
-            _logger.LogInformation(
-                "Ride completed at attraction '{AttractionName}' | Occupied slots: {Occupied}/{Capacity}\n" +
-                "Visitors who left the park: {Exited}\n" +
-                "Visitors who continued to another attraction: {Rerouted}",
-                attraction.Name,
-                attraction.OccupiedSlots,
-                attraction.Capacity,
-                exitedVisitors.Any() ? string.Join(", ", exitedVisitors) : "None",
-                reroutedVisitors.Any() ? string.Join(", ", reroutedVisitors) : "None"
-            );
         }
     }
 }
